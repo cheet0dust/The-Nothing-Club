@@ -16,5 +16,7 @@ def health():
 
 if __name__ == '__main__':
     import os
-    port = int(os.environ.get("PORT", 3001))
+    # Railway provides PORT, default to 8080 for local testing
+    port = int(os.environ.get("PORT", 8080))
+    print(f"🚀 Starting on 0.0.0.0:{port}")
     app.run(debug=False, host='0.0.0.0', port=port)
