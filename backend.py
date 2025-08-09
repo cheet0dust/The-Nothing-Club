@@ -32,8 +32,8 @@ from datetime import timedelta
 
 app = Flask(__name__)
 
-# Secure CORS - only allow your specific domains
-CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000"], 
+# Secure CORS - allow localhost for testing and production domains
+CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000", "https://*.netlify.app"], 
      methods=["GET", "POST"], 
      allow_headers=["Content-Type"])
 
@@ -481,4 +481,6 @@ if __name__ == '__main__':
     logging.info("Stillness API server started with security monitoring")
     
     # Disable debug mode for security
-    app.run(debug=False, port=3001, host='127.0.0.1', threaded=True)
+    # Use Railway's PORT environment variable, fallback to 3001
+    port = int(os.environ.get("PORT", 3001))
+    app.run(debug=False, port=port, host='0.0.0.0', threaded=True)
