@@ -264,7 +264,7 @@
         // Submit session to backend
         async function submitSession(duration) {
             try {
-                const response = await fetch('http://127.0.0.1:3001/api/session', {
+                const response = await fetch('https://nothing-club-backend.onrender.com/api/session', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -321,7 +321,7 @@
                 const currentElapsed = Date.now() - startTime;
                 if (currentElapsed > 5000) { // Only submit if > 5 seconds
                     // Use sendBeacon for reliable delivery when leaving page
-                    navigator.sendBeacon('http://127.0.0.1:3001/api/session', 
+                    navigator.sendBeacon('https://nothing-club-backend.onrender.com/api/session', 
                         JSON.stringify({
                             duration: Math.floor(currentElapsed / 1000),
                             timestamp: new Date().toISOString()
