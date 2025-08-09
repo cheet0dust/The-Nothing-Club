@@ -3,16 +3,34 @@
 Minimal Flask app to test Railway deployment
 """
 from flask import Flask, jsonify
+import os
+import logging
+
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return jsonify({"status": "Minimal app is working", "test": True})
+    logger.info("Home route accessed")
+    return jsonify({
+        "status": "Minimal app is working", 
+        "test": True,
+        "port": os.environ.get("PORT", "not set"),
+        "env": "railway" if "RAILWAY_ENVIRONMENT" in os.environ else "local"
+    })
 
 @app.route('/health')
 def health():
-    return jsonify({"health": "OK"})
+    logger.info("Health check accessed")
+    return "OK", 200
+
+@app.route('/ping')
+def ping():
+    logger.info("Ping accessed")
+    return "pong"
 
 if __name__ == '__main__':
     import os
