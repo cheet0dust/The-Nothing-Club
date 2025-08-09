@@ -33,7 +33,7 @@ from datetime import timedelta
 app = Flask(__name__)
 
 # Secure CORS - allow localhost for testing and production domains
-CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000", "https://*.netlify.app"], 
+CORS(app, origins=["http://localhost:8000", "http://127.0.0.1:8000", "https://thenothingclub.netlify.app"], 
      methods=["GET", "POST"], 
      allow_headers=["Content-Type"])
 
