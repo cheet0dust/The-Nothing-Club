@@ -470,7 +470,7 @@ if __name__ == '__main__':
     setup_logging()
     print("📊 Loading existing session data...")
     load_data()
-    print(f"🚀 Server starting at http://127.0.0.1:3001")
+    print(f"🚀 Server starting at http://0.0.0.0:3001")
     print("📡 API endpoint: POST /api/session")
     print("📈 Stats endpoint: GET /api/stats")
     print("🚨 Security logging: security.log")
