@@ -484,3 +484,4 @@ if __name__ == '__main__':
     # Use Railway's PORT environment variable, fallback to 3001
     port = int(os.environ.get("PORT", 3001))
     app.run(debug=False, port=port, host='0.0.0.0', threaded=True)
+# Railway deployment fix
