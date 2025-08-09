@@ -464,24 +464,28 @@ def get_stats():
         }
     })
 
-if __name__ == '__main__':
+# Initialize the app for both gunicorn and direct execution
+def initialize_app():
+    """Initialize the application"""
     print("🧘 Starting Stillness API Server...")
     print("🔒 Setting up security monitoring...")
     setup_logging()
     print("📊 Loading existing session data...")
     load_data()
-    print(f"🚀 Server starting at http://0.0.0.0:3001")
     print("📡 API endpoint: POST /api/session")
     print("📈 Stats endpoint: GET /api/stats")
     print("🚨 Security logging: security.log")
     print("💾 Data will be saved to session_data.json")
-    print("\n" + "="*50)
     
     # Log startup
     logging.info("Stillness API server started with security monitoring")
-    
-    # Disable debug mode for security
-    # Use Railway's PORT environment variable, fallback to 3001
+
+# Initialize when imported by gunicorn
+initialize_app()
+
+if __name__ == '__main__':
+    # For local development only
     port = int(os.environ.get("PORT", 3001))
-    app.run(debug=False, port=port, host='0.0.0.0', threaded=True)
-# Railway deployment fix
+    print(f"🚀 Server starting at http://0.0.0.0:{port}")
+    print("="*50)
+    app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
