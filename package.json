@@ -1,0 +1,6 @@
+{
+    "name": "stillness-timer-backend",
+    "scripts": {
+      "start": "python backend.py"
+    }
+  }
