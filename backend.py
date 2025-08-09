@@ -333,19 +333,19 @@ def generate_message(duration: int, percentile: int, total_sessions: int) -> str
     
     # Generate message based on percentile
     if percentile >= 99:
-        return f"Welcome to The Nothing Club – you are in the top 1% of users."
+        return f"welcome to the nothing club – you are in the top 1% of users."
     elif percentile >= 95:
-        return f"Stillness like this is rare – you're in the top {100-percentile}% of users."
+        return f"stillness like this is rare – you're in the top {100-percentile}% of users."
     elif percentile >= 90:
-        return f"Exceptional focus – you outlasted {percentile}% of users today."
+        return f"exceptional focus – you outlasted {percentile}% of users today."
     elif percentile >= 75:
-        return f"You were more still than {percentile}% of users today."
+        return f"you were more still than {percentile}% of users today."
     elif percentile >= 50:
-        return f"Good practice – you were more still than {percentile}% of users today."
+        return f"good practice – you were more still than {percentile}% of users today."
     elif percentile >= 25:
-        return f"Every moment of stillness counts. Keep practicing."
+        return f"every moment of stillness counts. keep practicing."
     else:
-        return f"Stillness is a practice. This is a beautiful start."
+        return f"stillness is a practice. this is a beautiful start."
 
 @app.route('/')
 def home():
