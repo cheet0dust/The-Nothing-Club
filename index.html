@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Timer</title>
+    
+    <!-- Import Inter font from Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Import JetBrains Mono for stable timer display -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Reset and base styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FFFFFF;
+            color: #B7BAC0;
+            overflow: hidden; /* Prevent scrollbars */
+        }
+        
+        /* Static header text at top */
+        .header-text {
+            position: fixed;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 10;
+        }
+        
+        .header-text h1 {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            color: #B7BAC0;
+            margin: 0;
+            line-height: 1.3;
+            letter-spacing: 0.02em;
+        }
+        
+        /* Message text at bottom */
+        .message-text {
+            position: fixed;
+            bottom: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 10;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        
+        .message-text.show {
+            opacity: 1;
+        }
+        
+        .message-text p {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            font-weight: 400;
+            color: #B7BAC0;
+            margin: 0;
+            line-height: 1.3;
+            letter-spacing: 0.02em;
+        }
+        
+        
+        /* Container that centers timer */
+        .container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            width: 100vw;
+            position: relative;
+        }
+        
+        /* Timer styles */
+        .timer {
+            font-family: 'Inter', sans-serif;
+            font-size: 128px;
+            font-weight: 400;
+            color: #000000;
+            text-align: center;
+            letter-spacing: 0;
+            font-variant-numeric: tabular-nums;
+            white-space: nowrap;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* Responsive breakpoints */
+        @media (max-width: 1024px) {
+            .timer {
+                font-size: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .timer {
+                font-size: 60px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .timer {
+                font-size: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Static header text -->
+    <div class="header-text">
+        <h1>DO NOTHING. BE STILL.</h1>
+    </div>
+    
+    <div class="container">
+        <!-- Timer display -->
+        <div class="timer" id="timer">00:00:00</div>
+    </div>
+    
+    <!-- Message display at bottom -->
+    <div class="message-text" id="messageText" style="display: none;">
+        <p></p>
+    </div>
+
+    <script>
+        // Timer state management
+        let startTime = null;
+        let elapsedTime = 0;
+        let timerInterval = null;
+        let isPageVisible = true;
+        
+        // DOM elements
+        const timerElement = document.getElementById('timer');
+        const messageElement = document.getElementById('messageText');
+        
+        // Initialize the application
+        function init() {
+            // Check if there's stored elapsed time from previous session
+            const storedTime = sessionStorage.getItem('timerElapsed');
+            if (storedTime) {
+                elapsedTime = parseInt(storedTime, 10);
+            }
+            
+            // Start the timer immediately
+            startTimer();
+            
+            // Set up page visibility change listener
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            
+            // Set up beforeunload listener as backup
+            window.addEventListener('beforeunload', handlePageLeave);
+        }
+        
+        // Start the timer
+        function startTimer() {
+            if (!startTime) {
+                startTime = Date.now() - elapsedTime;
+            }
+            
+            // Update timer immediately
+            updateTimer();
+            
+            // Set up interval to update every second
+            if (!timerInterval) {
+                timerInterval = setInterval(updateTimer, 1000);
+            }
+        }
+        
+        // Stop the timer
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            
+            // Store current elapsed time
+            if (startTime) {
+                elapsedTime = Date.now() - startTime;
+                sessionStorage.setItem('timerElapsed', elapsedTime.toString());
+            }
+        }
+        
+        // Reset the timer
+        function resetTimer() {
+            stopTimer();
+            elapsedTime = 0;
+            startTime = null;
+            sessionStorage.removeItem('timerElapsed');
+            updateTimerDisplay('00:00:00');
+        }
+        
+        // Update timer display
+        function updateTimer() {
+            if (!startTime || !isPageVisible) return;
+            
+            const currentTime = Date.now();
+            const totalElapsed = currentTime - startTime;
+            
+            // Format time as HH:MM:SS:mmm
+            const formatted = formatTime(totalElapsed);
+            updateTimerDisplay(formatted);
+        }
+        
+        // Format milliseconds to HH:MM:SS
+        function formatTime(milliseconds) {
+            const totalSeconds = Math.floor(milliseconds / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        // Update timer display (optimized to prevent unnecessary DOM updates)
+        let lastDisplayValue = '';
+        function updateTimerDisplay(value) {
+            if (value !== lastDisplayValue) {
+                timerElement.textContent = value;
+                lastDisplayValue = value;
+            }
+        }
+        
+        // Display message to user
+        function showMessage(message) {
+            const messageP = messageElement.querySelector('p');
+            
+            // If there's already a message showing, fade it out first
+            if (messageElement.classList.contains('show')) {
+                messageElement.classList.remove('show');
+                setTimeout(() => {
+                    messageP.textContent = message;
+                    messageElement.classList.add('show');
+                }, 500); // Wait for fade out to complete
+            } else {
+                // No existing message, show immediately
+                messageP.textContent = message;
+                messageElement.style.display = 'block';
+                messageElement.classList.add('show');
+            }
+            
+            // Message stays visible until replaced by a new one
+        }
+        
+        // Hide message (only used when replacing with new message)
+        function hideMessage() {
+            messageElement.classList.remove('show');
+            setTimeout(() => {
+                messageElement.style.display = 'none';
+            }, 500); // Match transition duration
+        }
+
+        // Submit session to backend
+        async function submitSession(duration) {
+            try {
+                const response = await fetch('http://127.0.0.1:3001/api/session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        duration: Math.floor(duration / 1000), // Convert to seconds
+                        timestamp: new Date().toISOString()
+                    })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✨ Session submitted:', data.message);
+                    
+                    // Show the message to the user
+                    showMessage(data.message);
+                    
+                    return data;
+                } else {
+                    console.error('Failed to submit session:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error submitting session:', error);
+                // Gracefully handle offline/network errors
+            }
+        }
+
+        // Handle page visibility changes
+        function handleVisibilityChange() {
+            if (document.visibilityState === 'hidden') {
+                isPageVisible = false;
+                
+                // Submit current session before stopping
+                if (startTime) {
+                    const currentElapsed = Date.now() - startTime;
+                    if (currentElapsed > 5000) { // Only submit if > 5 seconds
+                        submitSession(currentElapsed);
+                    }
+                }
+                
+                stopTimer();
+            } else if (document.visibilityState === 'visible') {
+                isPageVisible = true;
+                // Reset timer when returning to page
+                resetTimer();
+                startTimer();
+            }
+        }
+        
+        // Handle page leave (backup for page visibility)
+        function handlePageLeave() {
+            // Submit current session before leaving
+            if (startTime) {
+                const currentElapsed = Date.now() - startTime;
+                if (currentElapsed > 5000) { // Only submit if > 5 seconds
+                    // Use sendBeacon for reliable delivery when leaving page
+                    navigator.sendBeacon('http://127.0.0.1:3001/api/session', 
+                        JSON.stringify({
+                            duration: Math.floor(currentElapsed / 1000),
+                            timestamp: new Date().toISOString()
+                        })
+                    );
+                }
+            }
+            stopTimer();
+        }
+        
+        // Error handling wrapper
+        function safeExecute(fn) {
+            try {
+                fn();
+            } catch (error) {
+                console.error('Timer error:', error);
+                // Graceful fallback - show basic timer
+                updateTimerDisplay('00:00:00');
+            }
+        }
+        
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', () => safeExecute(init));
+    </script>
+</body>
+</html>
