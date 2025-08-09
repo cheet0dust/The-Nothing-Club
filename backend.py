@@ -350,6 +350,7 @@ def generate_message(duration: int, percentile: int, total_sessions: int) -> str
 @app.route('/')
 def home():
     """Health check endpoint"""
+    ensure_initialized()
     today = date.today().isoformat()
     today_sessions = sessions_by_date.get(today, [])
     total_sessions = sum(len(sessions) for sessions in sessions_by_date.values())
@@ -372,6 +373,7 @@ def submit_session():
         "timestamp": "2024-01-15T10:30:00"  # Optional, uses current time if not provided
     }
     """
+    ensure_initialized()
     try:
         # Get client IP address
         client_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'unknown'))
@@ -445,6 +447,7 @@ def submit_session():
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
     """Get current statistics"""
+    ensure_initialized()
     today = date.today().isoformat()
     today_sessions = sessions_by_date.get(today, [])
     all_sessions = []
@@ -464,27 +467,35 @@ def get_stats():
         }
     })
 
-# Initialize the app for both gunicorn and direct execution
-def initialize_app():
-    """Initialize the application"""
-    print("🧘 Starting Stillness API Server...")
-    print("🔒 Setting up security monitoring...")
-    setup_logging()
-    print("📊 Loading existing session data...")
-    load_data()
-    print("📡 API endpoint: POST /api/session")
-    print("📈 Stats endpoint: GET /api/stats")
-    print("🚨 Security logging: security.log")
-    print("💾 Data will be saved to session_data.json")
-    
-    # Log startup
-    logging.info("Stillness API server started with security monitoring")
+# Lazy initialization flag
+_app_initialized = False
 
-# Initialize when imported by gunicorn
-initialize_app()
+def ensure_initialized():
+    """Ensure the application is initialized"""
+    global _app_initialized
+    if not _app_initialized:
+        try:
+            print("🧘 Starting Stillness API Server...")
+            print("🔒 Setting up security monitoring...")
+            setup_logging()
+            print("📊 Loading existing session data...")
+            load_data()
+            print("📡 API endpoint: POST /api/session")
+            print("📈 Stats endpoint: GET /api/stats")
+            print("🚨 Security logging: security.log")
+            print("💾 Data will be saved to session_data.json")
+            
+            # Log startup
+            logging.info("Stillness API server started with security monitoring")
+            print("✅ Initialization complete")
+            _app_initialized = True
+        except Exception as e:
+            print(f"❌ Initialization error: {e}")
+            _app_initialized = True  # Mark as initialized anyway to avoid loops
 
 if __name__ == '__main__':
     # For local development only
+    ensure_initialized()
     port = int(os.environ.get("PORT", 3001))
     print(f"🚀 Server starting at http://0.0.0.0:{port}")
     print("="*50)
