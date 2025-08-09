@@ -321,6 +321,34 @@
             }
         }
         
+        // Determine if message should be shown based on percentile
+        function shouldShowMessage(percentile) {
+            // Show messages only for meaningful percentile achievements
+            // Top 1% (99th percentile) - Always show "Nothing Club" message
+            if (percentile >= 99) {
+                return true;
+            }
+            // Top 5% (95th percentile and above) - Show rare achievement
+            if (percentile >= 95) {
+                return true;
+            }
+            // Top 10% (90th percentile and above) - Show exceptional focus
+            if (percentile >= 90) {
+                return true;
+            }
+            // Top 25% (75th percentile and above) - Show good performance
+            if (percentile >= 75) {
+                return true;
+            }
+            // Above average (50th percentile and above) - Show decent performance
+            if (percentile >= 50) {
+                return true;
+            }
+            
+            // Below 50th percentile - Don't show discouraging messages
+            return false;
+        }
+
         // Display message to user
         function showMessage(message) {
             const messageP = messageElement.querySelector('p');
@@ -369,10 +397,12 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('✨ Session submitted:', data.message);
+                    console.log('✨ Session submitted:', data.message, `Percentile: ${data.percentile}%`);
                     
-                    // Show the message to the user
-                    showMessage(data.message);
+                    // Only show message for significant percentile achievements
+                    if (shouldShowMessage(data.percentile)) {
+                        showMessage(data.message);
+                    }
                     
                     return data;
                 } else {
